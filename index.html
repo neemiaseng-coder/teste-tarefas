@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instituto 4R | Boas-vindas</title>
+<style>
+:root{--navy:#14255b;--blue:#075ba8;--ink:#1b2b4c;--pale:#f3f7fc}
+*{box-sizing:border-box}body{margin:0;background:#eef2f7;color:#1d2b45;font-family:Inter,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid #e3e9f2;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:800;color:var(--navy);letter-spacing:.04em}.brand small{display:block;font-weight:500;color:#68758c;letter-spacing:0;font-size:12px;margin-top:3px}
+main{max-width:1440px;margin:28px auto;padding:0 22px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:24px}
+.panel,.preview{background:#fff;border:1px solid #e1e7f0;border-radius:18px;box-shadow:0 10px 28px #172b4d0b}
+.panel{padding:24px;height:max-content}.panel h1{font-size:21px;margin:0 0 6px;color:var(--navy)}.sub{font-size:13px;color:#718096;margin:0 0 24px;line-height:1.5}
+label{display:block;font-size:13px;font-weight:700;color:#35445d;margin:17px 0 7px}
+input,select,textarea{width:100%;border:1px solid #d5deea;border-radius:10px;padding:12px 13px;font:inherit;font-size:14px;color:#24334d;background:#fff;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#2874bc;box-shadow:0 0 0 3px #2874bc18}textarea{resize:vertical;min-height:92px;line-height:1.45}
+.segment{display:grid;grid-template-columns:1fr 1fr;gap:8px}.segment button{border:1px solid #d5deea;background:#f8fafc;color:#43516a;padding:11px;border-radius:10px;font-weight:700;cursor:pointer}.segment button.active{background:#eaf2fc;border-color:#2b70b5;color:#124c86}
+.download{width:100%;border:0;background:#124d8b;color:#fff;padding:14px;border-radius:11px;font-weight:800;font-size:14px;margin-top:22px;cursor:pointer}.download:hover{background:#0c3c70}
+.hint{font-size:11px;color:#8190a5;line-height:1.45;margin-top:12px}
+.preview{padding:22px;min-width:0}.previewhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}.previewhead strong{color:var(--navy)}.resolution{font-size:12px;color:#718096;background:#f1f5fa;padding:7px 10px;border-radius:30px}
+.canvaswrap{background:#e8edf4;border-radius:12px;padding:14px;display:flex;justify-content:center;align-items:center;min-height:400px;overflow:hidden}
+canvas{display:block;max-width:100%;max-height:calc(100vh - 190px);width:auto;height:auto;object-fit:contain;box-shadow:0 8px 28px #14255b22;background:#fff}
+.loading{color:#718096;font-size:14px;text-align:center;padding:24px}
+@media(max-width:900px){main{grid-template-columns:1fr;margin:16px auto}.panel{order:1}.preview{order:2}.canvaswrap{min-height:280px}canvas{max-height:70vh}}
+</style>
+</head>
+<body>
+<header><div class="brand">INSTITUTO 4R<small>Gerador de boas-vindas</small></div><div style="font-size:12px;color:#6e7c91">Acesso online • Exportação em alta resolução</div></header>
+<main>
+<section class="panel">
+<h1>Personalizar recepção</h1><p class="sub">Preencha os dados do paciente. A arte é atualizada automaticamente.</p>
+<label for="format">Formato da imagem</label><div class="segment"><button id="desk" class="active" type="button">Computador</button><button id="mob" type="button">Celular</button></div>
+<label for="sex">Sexo do paciente</label><select id="sex"><option value="m">Masculino</option><option value="f">Feminino</option></select>
+<label for="name">Nome do paciente</label><input id="name" maxlength="48" placeholder="Digite o nome do paciente" value="Nome do paciente">
+<label for="message">Mensagem personalizada</label><textarea id="message" maxlength="180">É um prazer receber você em nosso instituto.</textarea>
+<button class="download" id="download">Baixar imagem em 4K (PNG)</button>
+<p class="hint">Computador: 3840 × 2160 px. Celular: 2160 × 3840 px. A imagem é gerada no próprio navegador; os dados digitados não são enviados nem armazenados.</p>
+</section>
+<section class="preview">
+<div class="previewhead"><strong>Pré-visualização</strong><span class="resolution" id="resolution">3840 × 2160 px • 16:9</span></div>
+<div class="canvaswrap"><canvas id="art" width="3840" height="2160"></canvas></div>
+<div id="status" class="loading">Carregando identidade visual…</div>
+</section>
+</main>
+<script>
+const canvas=document.getElementById('art'),ctx=canvas.getContext('2d');
+const photo=new Image(),logo=new Image();let loaded=0,format='desktop';
+const status=document.getElementById('status');
+function loadAsset(file,img,mime){fetch('assets/'+file).then(r=>{if(!r.ok)throw Error('Falha ao carregar '+file);return r.text()}).then(b64=>{img.onload=()=>{loaded++;if(loaded===2){status.style.display='none';render()}};img.onerror=()=>status.textContent='Não foi possível carregar os arquivos da identidade visual.';img.src='data:'+mime+';base64,'+b64.trim()}).catch(()=>status.textContent='Erro ao carregar a identidade visual. Atualize a página.')}
+loadAsset('fachada.jpg.b64',photo,'image/jpeg');loadAsset('logo.webp.b64',logo,'image/webp');
+const $=id=>document.getElementById(id);
+function rr(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r);c.fill()}
+function textFit(c,text,max,size,weight='700',family='Arial'){let s=size;c.font=weight+' '+s+'px '+family;while(c.measureText(text).width>max&&s>20){s-=3;c.font=weight+' '+s+'px '+family}return s}
+function drawDesktop(){
+ const W=3840,H=2160;canvas.width=W;canvas.height=H;
+ ctx.drawImage(photo,0,0,W,H);
+ const g=ctx.createLinearGradient(0,0,2350,0);g.addColorStop(0,'rgba(250,251,253,1)');g.addColorStop(.52,'rgba(250,251,253,.96)');g.addColorStop(1,'rgba(250,251,253,0)');
+ ctx.fillStyle=g;ctx.fillRect(0,0,2450,H);
+ ctx.drawImage(logo,120,90,1320,455);
+ ctx.fillStyle='#075ba8';rr(ctx,145,735,700,17,8);
+ ctx.fillStyle='#075ba8';ctx.font='700 112px Arial';ctx.fillText($('sex').value==='f'?'Bem-vinda!':'Bem-vindo!',145,970);
+ const name=$('name').value.trim()||'Nome do paciente';textFit(ctx,name,1430,164,'700','Arial');ctx.fillStyle='#14255b';ctx.fillText(name,140,1195);
+ ctx.fillStyle='#075ba8';rr(ctx,145,1300,190,16,8);
+ ctx.fillStyle='#1b2b4c';ctx.font='400 78px Arial';
+ wrapCanvas(ctx,$('message').value.trim()||'É um prazer receber você em nosso instituto.',145,1450,1480,100,102);
+}
+function wrapCanvas(c,str,x,y,maxWidth,lineHeight,maxLines){let words=str.split(/\s+/),line='',n=0;for(let w of words){let test=(line+' '+w).trim();if(c.measureText(test).width>maxWidth&&line){c.fillText(line,x,y);line=w;y+=lineHeight;if(++n>=maxLines)return}else line=test}if(line)c.fillText(line,x,y)}
+function drawMobile(){
+ const W=2160,H=3840;canvas.width=W;canvas.height=H;
+ const grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,'#fbfcff');grad.addColorStop(.65,'#f1f6fc');grad.addColorStop(1,'#e9f1fa');ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+ ctx.drawImage(logo,(W-1660)/2,130,1660,573);
+ ctx.fillStyle='#075ba8';rr(ctx,760,850,640,16,8);
+ ctx.fillStyle='#075ba8';ctx.textAlign='center';ctx.font='700 120px Arial';ctx.fillText($('sex').value==='f'?'Bem-vinda!':'Bem-vindo!',W/2,1120);
+ const name=$('name').value.trim()||'Nome do paciente';let fs=textFit(ctx,name,1740,138,'700','Arial');ctx.font='700 '+fs+'px Arial';ctx.fillStyle='#fff';rr(ctx,145,1280,1870,275,52);ctx.fillStyle='#07508f';rr(ctx,145,1280,1870,275,52);ctx.fillStyle='#fff';ctx.fillText(name,W/2,1465);
+ ctx.textAlign='left';ctx.fillStyle='#075ba8';rr(ctx,205,1695,24,290,10);
+ ctx.fillStyle='#1b2b4c';ctx.font='400 74px Arial';wrapCanvas(ctx,$('message').value.trim()||'É um prazer receber você em nosso instituto.',320,1795,1500,100,3);
+ // Original facade photo occupies the lower half; crop the old left-side logo out.
+ const sx=photo.width*.37,sw=photo.width*.63,sy=photo.height*.12,sh=photo.height*.88;
+ ctx.drawImage(photo,sx,sy,sw,sh,0,2200,W,1640);
+ const fade=ctx.createLinearGradient(0,2160,0,2440);fade.addColorStop(0,'rgba(241,246,252,1)');fade.addColorStop(1,'rgba(241,246,252,0)');ctx.fillStyle=fade;ctx.fillRect(0,2160,W,280);
+ ctx.strokeStyle='#075ba8';ctx.lineWidth=5;ctx.beginPath();ctx.roundRect(60,60,W-120,H-120,110);ctx.stroke();
+ ctx.textAlign='center';ctx.fillStyle='#52627a';ctx.font='700 30px Arial';ctx.fillText('INSTITUTO DE OFTALMOLOGIA • ODONTOLOGIA • DESDE 1972',W/2,3755);
+}
+function render(){if(loaded!==2)return;format==='desktop'?drawDesktop():drawMobile();$('resolution').textContent=format==='desktop'?'3840 × 2160 px • 16:9':'2160 × 3840 px • 9:16'}
+['sex','name','message'].forEach(id=>$(id).addEventListener('input',render));
+$('desk').onclick=()=>{format='desktop';$('desk').classList.add('active');$('mob').classList.remove('active');render()};
+$('mob').onclick=()=>{format='mobile';$('mob').classList.add('active');$('desk').classList.remove('active');render()};
+$('download').onclick=()=>{render();canvas.toBlob(blob=>{if(!blob)return;const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Instituto-4R-'+(format==='desktop'?'Computador-4K':'Celular-4K')+'.png';a.click();URL.revokeObjectURL(a.href)},'image/png')};
+</script>
+</body></html>
